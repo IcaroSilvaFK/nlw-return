@@ -1,0 +1,7 @@
+export function FeedBackSuccesccStep() {
+  return (
+    <>
+      <></>
+    </>
+  );
+}
