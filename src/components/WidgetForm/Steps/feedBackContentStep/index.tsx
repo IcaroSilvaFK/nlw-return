@@ -6,6 +6,8 @@ import { feedbackTypes, IFeedBackType } from "../..";
 import { ArrowLeft } from "phosphor-react";
 import { ScreenShotButton } from "../../../ScreenShotButton";
 import { toast } from "react-toastify";
+import { api } from "../../../../configs/axios";
+import { Loading } from "../../../Loading";
 
 interface IFeedBackContentStepProps {
   title: IFeedBackType;
@@ -23,11 +25,13 @@ export function FeedBackContentStep({
   infoSubmitForm,
 }: IFeedBackContentStepProps) {
   const [image, setImage] = useState<string | null>(null);
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const { register, handleSubmit, reset, watch } = useForm<IFormProps>();
   const feedbackTypeInfo = feedbackTypes[title];
 
-  const onSubmit: SubmitHandler<IFormProps> = ({ feedback }) => {
+  const onSubmit: SubmitHandler<IFormProps> = async ({ feedback }) => {
     infoSubmitForm(true);
+    setIsSendingFeedback(true);
     if (!feedback) {
       toast.error("Preenchas os campos", {
         draggable: true,
@@ -37,13 +41,16 @@ export function FeedBackContentStep({
       return;
     }
 
-    const feedbackProps = {
-      feedback,
-      image,
-      feedbackType: feedbackTypeInfo.title.toLowerCase(),
-    };
-
-    console.log(feedbackProps);
+    try {
+      await api.post("feedback", {
+        comment: feedback,
+        screenshot: image,
+        type: feedbackTypeInfo.title.toUpperCase(),
+      });
+      setIsSendingFeedback(false);
+    } catch (e) {
+      console.log(e);
+    }
 
     reset();
     setImage(null);
@@ -82,8 +89,9 @@ export function FeedBackContentStep({
             className='p-2 bg-brand-500 rounded-md border-transparent flex-1 flex justify-center items-center text-sm hover:bg-brand-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-brand-500 transition-colors
             disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand-500
             '
-            disabled={!watch("feedback")}
+            disabled={!watch("feedback") || isSendingFeedback}
           >
+            {isSendingFeedback ? <Loading /> : "Enviar feedback"}
             Enviar feedback
           </button>
         </footer>

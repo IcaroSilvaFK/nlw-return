@@ -1,4 +1,4 @@
-import { Widgte } from "./components/Widgte";
+import { Widgte } from "./components/Widget";
 
 function App() {
   return (
